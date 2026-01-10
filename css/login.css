@@ -1,0 +1,141 @@
+/* =========================
+   CONTENEDOR GENERAL
+========================= */
+#login-screen {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(
+      circle at top,
+      rgba(30, 136, 229, 0.35),
+      transparent 60%
+    ),
+    linear-gradient(135deg, #0d47a1, #000);
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* =========================
+   CAJA LOGIN
+========================= */
+.login-box {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 2.2rem;
+  border-radius: 18px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  box-shadow:
+    0 0 20px rgba(30, 136, 229, 0.45),
+    0 0 40px rgba(30, 136, 229, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  animation: slideUp 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* =========================
+   LOGO
+========================= */
+.logo {
+  width: 100%;
+  max-width: 180px;
+  margin: 0 auto 0.3rem;
+  filter: drop-shadow(0 0 12px rgba(30, 136, 229, 0.8));
+}
+
+/* =========================
+   INPUTS
+========================= */
+.login-box select,
+.login-box input {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  color: white;
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.login-box select option {
+  color: black;
+}
+
+.login-box input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.login-box select:focus,
+.login-box input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(30, 136, 229, 0.7),
+    0 0 12px rgba(30, 136, 229, 0.8);
+}
+
+/* =========================
+   BOTÓN
+========================= */
+.login-box button {
+  margin-top: 0.3rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #1e88e5, #64b5f6);
+  cursor: pointer;
+  box-shadow:
+    0 6px 18px rgba(30, 136, 229, 0.6),
+    0 0 18px rgba(30, 136, 229, 0.7);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-box button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 28px rgba(30, 136, 229, 0.9),
+    0 0 26px rgba(30, 136, 229, 1);
+}
+
+.login-box button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   ANIMACIONES
+========================= */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 360px) {
+  .login-box {
+    width: 90%;
+    padding: 1.8rem;
+  }
+}

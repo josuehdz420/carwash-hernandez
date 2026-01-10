@@ -1,0 +1,976 @@
+/* =========================
+   RESET + BASE
+========================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  background: #f4f6f8;
+  color: #333;
+}
+
+/* =========================
+   VISIBILIDAD (CLAVE)
+========================= */
+.hidden {
+  display: none !important;
+}
+
+/* =========================
+   ESTRUCTURA GENERAL
+========================= */
+#login-screen,
+#app-screen {
+  width: 100%;
+  min-height: 100vh;
+}
+
+#app-content {
+  padding: 1rem;
+}
+
+/* =========================
+   HEADER
+========================= */
+header {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+header button {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+.dashboard h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.dashboard p {
+  margin: 0.3rem 0 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* =========================
+   CARDS
+========================= */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.card p {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1e88e5;
+}
+
+/* =========================
+   ACCIONES DASHBOARD
+========================= */
+.dashboard-actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.dashboard-actions button {
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: none;
+  background: white;
+  color: #1e88e5;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVE BASE
+========================= */
+@media (min-width: 768px) {
+  #app-content {
+    max-width: 900px;
+    margin: auto;
+  }
+
+  .dashboard-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+
+/* =========================
+   DASHBOARD — NIVEL APP
+========================= */
+.dashboard {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   JORNADA BOX
+========================= */
+.jornada-box {
+  background: linear-gradient(135deg, #ffffff, #f7f9fc);
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 1rem 0 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.jornada-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.jornada-box button {
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background 0.2s ease;
+}
+
+/* Botones de jornada */
+#btn-iniciar-jornada {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: white;
+}
+
+#btn-cerrar-jornada {
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: white;
+}
+
+#btn-reanudar-jornada {
+  background: linear-gradient(135deg, #fb8c00, #ef6c00);
+  color: white;
+}
+
+#btn-jornada-prueba {
+  background: linear-gradient(135deg, #5e35b1, #4527a0);
+  color: white;
+}
+
+/* Hover */
+.jornada-box button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.jornada-box button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   TARJETAS DE ESTADÍSTICAS
+========================= */
+.dashboard-cards {
+  margin-top: 0.5rem;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(30, 136, 229, 0.08),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.card p {
+  font-size: 1.4rem;
+}
+
+/* =========================
+   ACCIONES PRINCIPALES
+========================= */
+.dashboard-actions {
+  margin-top: 1.2rem;
+}
+
+.dashboard-actions button {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-actions button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(30, 136, 229, 0.12),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.dashboard-actions button:hover::before {
+  opacity: 1;
+}
+
+/* =========================
+   WARNING (JORNADA INACTIVA)
+========================= */
+.warning {
+  margin-top: 1.2rem;
+  padding: 0.8rem 1rem;
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  color: #e65100;
+  border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(230, 81, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, 0);
+  }
+}
+
+/* =========================
+   RESPONSIVE DASHBOARD
+========================= */
+@media (min-width: 768px) {
+  .jornada-box {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .jornada-box button {
+    width: auto;
+    padding: 0.6rem 1rem;
+  }
+}
+
+/* ======================================================
+   HISTORIAL
+====================================================== */
+.historial {
+  animation: fadeIn 0.35s ease;
+}
+
+.historial-header {
+  margin-bottom: 1rem;
+}
+
+.historial-header h2 {
+  margin: 0.3rem 0;
+}
+
+.historial-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.historial h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* TABLAS */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.table thead {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 0.6rem 0.5rem;
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: #f1f5fb;
+}
+
+.table tbody td {
+  border-bottom: 1px solid #eee;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* TOTALES */
+.historial-totales {
+  margin-top: 1.2rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ffffff, #f7f9fc);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+.historial-totales p {
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+}
+
+/* ======================================================
+   GASTOS
+====================================================== */
+.gastos {
+  animation: fadeIn 0.35s ease;
+}
+
+.gastos h2 {
+  margin-bottom: 1rem;
+}
+
+/* FORMULARIO GASTOS */
+#gasto-form {
+  background: linear-gradient(135deg, #ffffff, #f7f9fc);
+  padding: 1rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  max-width: 420px;
+}
+
+#gasto-form input {
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+#gasto-form input:focus {
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.2);
+}
+
+#gasto-form button[type="submit"] {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#gasto-form #btn-volver {
+  background: #eeeeee;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* LISTA DE GASTOS */
+#gastos-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#gastos-list li {
+  background: white;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
+  animation: slideUp 0.25s ease;
+}
+
+/* ======================================================
+   ANIMACIONES BASE
+====================================================== */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================================
+   REGISTRAR LAVADO — UI DEFINITIVA
+====================================================== */
+.lavados {
+  animation: fadeIn 0.3s ease;
+}
+
+.lavados h2 {
+  margin: 0.6rem 0 1rem;
+  font-size: 1.4rem;
+  color: #222;
+}
+
+/* ------------------------------------------------------
+   BOTÓN VOLVER
+------------------------------------------------------ */
+.lavados #btn-volver {
+  background: none;
+  border: none;
+  color: #1e88e5;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.4rem;
+}
+
+/* ------------------------------------------------------
+   FORM CARD
+------------------------------------------------------ */
+.lavados form.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  background: linear-gradient(135deg, #ffffff, #f4f7fb);
+  padding: 1.2rem;
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  animation: slideUp 0.35s ease;
+}
+
+/* ------------------------------------------------------
+   INPUTS / SELECT / TEXTAREA
+------------------------------------------------------ */
+.lavados form.form-card input,
+.lavados form.form-card select,
+.lavados form.form-card textarea {
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+
+  border-radius: 12px;
+  border: 1px solid #d0d7e2;
+  background: white;
+
+  font-size: 0.95rem;
+  color: #333;
+
+  transition:
+    border 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.lavados form.form-card input::placeholder,
+.lavados form.form-card textarea::placeholder {
+  color: #9aa3af;
+}
+
+/* FOCUS */
+.lavados form.form-card input:focus,
+.lavados form.form-card select:focus,
+.lavados form.form-card textarea:focus {
+  outline: none;
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.25);
+}
+
+/* ------------------------------------------------------
+   TEXTAREA
+------------------------------------------------------ */
+.lavados textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* ------------------------------------------------------
+   CHECKBOX PERSONALIZADO
+------------------------------------------------------ */
+.lavados .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  font-size: 0.9rem;
+  color: #444;
+
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+
+  background: rgba(30, 136, 229, 0.05);
+}
+
+/* Ocultamos checkbox nativo */
+.lavados .checkbox input {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+
+  border-radius: 6px;
+  border: 2px solid #1e88e5;
+  cursor: pointer;
+
+  display: grid;
+  place-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+/* Check */
+.lavados .checkbox input::before {
+  content: "✔";
+  font-size: 0.75rem;
+  color: white;
+  transform: scale(0);
+  transition: transform 0.1s ease;
+}
+
+.lavados .checkbox input:checked {
+  background: #1e88e5;
+}
+
+.lavados .checkbox input:checked::before {
+  transform: scale(1);
+}
+
+/* ------------------------------------------------------
+   BOTÓN GUARDAR
+------------------------------------------------------ */
+.lavados form.form-card button[type="submit"] {
+  margin-top: 0.4rem;
+
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+
+  border: none;
+  padding: 0.9rem;
+  border-radius: 14px;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 24px rgba(30, 136, 229, 0.35);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.lavados form.form-card button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(30, 136, 229, 0.45);
+}
+
+.lavados form.form-card button[type="submit"]:active {
+  transform: scale(0.97);
+}
+
+/* ------------------------------------------------------
+   ANIMACIONES
+------------------------------------------------------ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================================
+   CLIENTES
+====================================================== */
+.clientes {
+  animation: fadeIn 0.3s ease;
+}
+
+.clientes .header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.clientes h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.clientes h3 {
+  margin: 1.2rem 0 0.6rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* ------------------------------------------------------
+   FORM CLIENTES
+------------------------------------------------------ */
+.clientes .form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  background: linear-gradient(135deg, #ffffff, #f4f7fb);
+  padding: 1.2rem;
+  border-radius: 18px;
+
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+/* Inputs heredan estilo general */
+.clientes input {
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid #d0d7e2;
+  font-size: 0.95rem;
+}
+
+.clientes input:focus {
+  outline: none;
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.25);
+}
+
+.clientes button[type="submit"] {
+  margin-top: 0.3rem;
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+  border: none;
+  padding: 0.85rem;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  box-shadow: 0 8px 22px rgba(30, 136, 229, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clientes button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(30, 136, 229, 0.45);
+}
+
+/* ------------------------------------------------------
+   LISTADO CLIENTES
+------------------------------------------------------ */
+#clientes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.cliente-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: white;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.25s ease;
+}
+
+.cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cliente-info strong {
+  font-size: 0.95rem;
+}
+
+.cliente-info small {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.cliente-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.cliente-actions button {
+  border: none;
+  background: #f1f4f8;
+  padding: 0.4rem 0.55rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.cliente-actions button:hover {
+  background: #e0e6ef;
+  transform: scale(1.05);
+}
+
+/* ======================================================
+   USUARIOS
+====================================================== */
+.usuarios {
+  animation: fadeIn 0.3s ease;
+}
+
+.usuarios h2 {
+  margin-bottom: 0.6rem;
+}
+
+.usuarios h3 {
+  margin: 1.2rem 0 0.5rem;
+}
+
+/* ------------------------------------------------------
+   FORM USUARIOS
+------------------------------------------------------ */
+.usuarios .form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  background: linear-gradient(135deg, #ffffff, #f4f7fb);
+  padding: 1.2rem;
+  border-radius: 18px;
+
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+.usuarios input,
+.usuarios select {
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid #d0d7e2;
+  font-size: 0.95rem;
+}
+
+.usuarios input:focus,
+.usuarios select:focus {
+  outline: none;
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.25);
+}
+
+/* Acciones form */
+.usuarios .form-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.usuarios .form-actions button {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 14px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.usuarios .form-actions button[type="submit"] {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+}
+
+.usuarios .form-actions #btn-volver {
+  background: #e0e6ef;
+}
+
+/* ------------------------------------------------------
+   LISTA USUARIOS
+------------------------------------------------------ */
+.usuarios ul.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.usuario-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: white;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.usuario-item.inactivo {
+  opacity: 0.55;
+}
+
+.usuario-item small {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.usuario-item .item-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.usuario-item .item-actions button {
+  border: none;
+  background: #f1f4f8;
+  padding: 0.4rem 0.55rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* ======================================================
+   JORNADAS (BASE VISUAL FUTURA)
+====================================================== */
+.jornada-box {
+  background: linear-gradient(135deg, #ffffff, #f4f7fb);
+  padding: 1rem;
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  margin: 1rem 0;
+}
+
+.jornada-box p {
+  margin: 0.3rem 0;
+  font-weight: 600;
+}
+
+.jornada-box button {
+  margin-top: 0.4rem;
+  padding: 0.7rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+}
+
+/* ======================================================
+   ANIMACIONES
+====================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
