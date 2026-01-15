@@ -14,10 +14,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 // ==========================
-// OBTENER JORNADA ACTIVA
+// UTIL
+// ==========================
+function getTodayKey() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ==========================
+// OBTENER JORNADA ACTIVA (HOY)
 // ==========================
 export async function getActiveJornada() {
-  const todayKey = new Date().toISOString().split("T")[0];
+  const todayKey = getTodayKey();
 
   const q = query(
     collection(db, "jornadas"),
@@ -25,33 +32,34 @@ export async function getActiveJornada() {
     where("activa", "==", true)
   );
 
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
 
-  const d = snapshot.docs[0];
+  const d = snap.docs[0];
   return { id: d.id, ...d.data() };
 }
 
 // ==========================
-// OBTENER JORNADA DEL DÍA
+// OBTENER JORNADA DEL DÍA (ACTIVA O NO)
 // ==========================
 export async function getTodayJornada() {
-  const todayKey = new Date().toISOString().split("T")[0];
+  const todayKey = getTodayKey();
 
   const q = query(
     collection(db, "jornadas"),
     where("date", "==", todayKey)
   );
 
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
 
-  const d = snapshot.docs[0];
+  const d = snap.docs[0];
   return { id: d.id, ...d.data() };
 }
 
 // ==========================
 // INICIAR JORNADA
+// (solo si NO existe ninguna hoy)
 // ==========================
 export async function startJornada() {
   const user = getSessionUser();
@@ -62,13 +70,16 @@ export async function startJornada() {
     return;
   }
 
-  const active = await getActiveJornada();
-  if (active) {
-    alert("Ya hay una jornada activa hoy");
+  const todayKey = getTodayKey();
+
+  const existingSnap = await getDocs(
+    query(collection(db, "jornadas"), where("date", "==", todayKey))
+  );
+
+  if (!existingSnap.empty) {
+    alert("Ya existe una jornada para hoy. Usa reanudar.");
     return;
   }
-
-  const todayKey = new Date().toISOString().split("T")[0];
 
   await addDoc(collection(db, "jornadas"), {
     date: todayKey,
@@ -82,18 +93,26 @@ export async function startJornada() {
 
 // ==========================
 // REANUDAR JORNADA
+// (sin límite de veces)
 // ==========================
 export async function resumeJornada(jornadaId) {
   const user = getSessionUser();
   if (!user) return;
 
   if (user.role !== "admin" && user.role !== "super_admin") {
-    alert("No tienes permiso");
+    alert("No tienes permiso para reanudar jornada");
+    return;
+  }
+
+  if (!jornadaId) {
+    alert("Jornada inválida");
     return;
   }
 
   await updateDoc(doc(db, "jornadas", jornadaId), {
-    activa: true
+    activa: true,
+    reopenedAt: serverTimestamp(),
+    reopenedBy: user.name
   });
 
   loadDashboard();

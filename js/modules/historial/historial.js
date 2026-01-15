@@ -33,7 +33,6 @@ export async function loadHistorial() {
 
       <header class="module-header">
         <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
-
         <h2 class="module-title">Historial</h2>
 
         <select id="filtro-historial" class="select-filter">
@@ -46,86 +45,94 @@ export async function loadHistorial() {
       ${
         isSuperAdmin
           ? `
-        <section class="danger-zone">
-          <button id="btn-borrar-historial" class="btn btn-danger">
-            🗑 Eliminar TODO el historial
-          </button>
-          <p class="warning-text">
-            Esta acción elimina lavados, pagos, gastos y jornadas.<br />
-            No se puede deshacer.
-          </p>
-        </section>
-      `
+            <section class="danger-zone">
+              <button id="btn-borrar-historial" class="btn btn-danger">
+                🗑 Eliminar TODO el historial
+              </button>
+              <p class="warning-text">
+                Esta acción elimina lavados, pagos, gastos y jornadas.<br />
+                No se puede deshacer.
+              </p>
+            </section>
+          `
           : ""
       }
 
       <main class="module-content">
 
+        <!-- JORNADAS -->
+        <section class="table-section">
+          <h3>Jornadas</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Lavados</th>
+                <th>Ingresos</th>
+                <th>Gastos</th>
+                <th>Balance</th>
+                <th>Cuadre</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-jornadas"></tbody>
+          </table>
+        </section>
+
+        <!-- LAVADOS -->
         <section class="table-section">
           <h3>Lavados</h3>
-          <div class="table-wrapper">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Vehículo</th>
-                  <th>Cliente</th>
-                  <th>Estado</th>
-                  <th>Importe</th>
-                  <th>Registrado por</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-lavados"></tbody>
-            </table>
-          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Vehículo</th>
+                <th>Cliente</th>
+                <th>Estado</th>
+                <th>Importe</th>
+                <th>Registrado por</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-lavados"></tbody>
+          </table>
         </section>
 
+        <!-- PAGOS -->
         <section class="table-section">
-          <h3>Pagos (Ingresos reales)</h3>
-          <div class="table-wrapper">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Cliente</th>
-                  <th>Monto</th>
-                  <th>Origen</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-pagos"></tbody>
-            </table>
-          </div>
+          <h3>Pagos</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Origen</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-pagos"></tbody>
+          </table>
         </section>
 
+        <!-- GASTOS -->
         <section class="table-section">
           <h3>Gastos</h3>
-          <div class="table-wrapper">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Concepto</th>
-                  <th>Monto</th>
-                  <th>Registrado por</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-gastos"></tbody>
-            </table>
-          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Registrado por</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-gastos"></tbody>
+          </table>
         </section>
 
         <section class="totals-card">
-          <p>
-            <strong>Ingresos:</strong>
-            $ <span id="total-ingresos">0.00</span>
-          </p>
-          <p>
-            <strong>Gastos:</strong>
-            $ <span id="total-gastos">0.00</span>
-          </p>
+          <p><strong>Ingresos:</strong> $ <span id="total-ingresos">0.00</span></p>
+          <p><strong>Gastos:</strong> $ <span id="total-gastos">0.00</span></p>
           <p class="balance">
-            <strong>Balance:</strong>
-            $ <span id="balance">0.00</span>
+            <strong>Balance:</strong> $ <span id="balance">0.00</span>
           </p>
         </section>
 
@@ -149,20 +156,11 @@ export async function loadHistorial() {
 }
 
 // ==========================
-// BORRAR TODO EL HISTORIAL
+// BORRAR TODO
 // ==========================
 async function borrarTodoElHistorial() {
-  if (
-    !confirm(
-      "⚠️ ATENCIÓN\n\nEsto eliminará TODO el historial.\n\n¿Deseas continuar?"
-    )
-  ) return;
-
-  if (
-    !confirm(
-      "⚠️ ÚLTIMA CONFIRMACIÓN\n\nEsta acción NO se puede deshacer.\n\n¿Eliminar definitivamente?"
-    )
-  ) return;
+  if (!confirm("⚠️ Esto eliminará TODO el historial.\n\n¿Continuar?")) return;
+  if (!confirm("⚠️ ÚLTIMA CONFIRMACIÓN.\n\n¿Eliminar definitivamente?")) return;
 
   const colecciones = ["lavados", "pagos", "gastos", "jornadas"];
 
@@ -185,6 +183,7 @@ async function cargarHistorial(tipo) {
 
   const { start, end } = obtenerRangoFechas(tipo);
 
+  await cargarJornadas(start, end);
   const ingresos = await cargarPagos(start, end);
   const gastos = await cargarGastos(start, end);
   await cargarLavados(start, end);
@@ -227,6 +226,50 @@ function obtenerRangoFechas(tipo) {
   };
 }
 
+// ==========================
+// JORNADAS
+// ==========================
+async function cargarJornadas(start, end) {
+  const tbody = document.getElementById("tabla-jornadas");
+  tbody.innerHTML = "";
+
+  const q = query(
+    collection(db, "jornadas"),
+    where("createdAt", ">=", start),
+    where("createdAt", "<=", end),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    tbody.innerHTML = `<tr><td colspan="6">Sin jornadas</td></tr>`;
+    return;
+  }
+
+  snap.forEach(d => {
+    const j = d.data();
+    const fecha = j.createdAt?.toDate().toLocaleDateString() || "-";
+
+    const cuadre =
+      j.cuadre?.hizoCuadre
+        ? j.cuadre.diferencia === 0
+          ? "🟢 Cuadrado"
+          : `🔴 Dif: $${j.cuadre.diferencia.toFixed(2)}`
+        : "—";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fecha}</td>
+      <td>${j.resumen?.lavados ?? 0}</td>
+      <td>$${(j.resumen?.ingresos ?? 0).toFixed(2)}</td>
+      <td>$${(j.resumen?.gastos ?? 0).toFixed(2)}</td>
+      <td>$${(j.resumen?.balance ?? 0).toFixed(2)}</td>
+      <td>${cuadre}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 // ==========================
 // LAVADOS
 // ==========================
@@ -312,7 +355,7 @@ async function cargarPagos(start, end) {
       <td>${p.createdAt.toDate().toLocaleString()}</td>
       <td>${p.clientName || "Anónimo"}</td>
       <td>$${p.amount.toFixed(2)}</td>
-      <td>${p.origen === "lavado" ? "Lavado" : p.origen}</td>
+      <td>${p.origen || "-"}</td>
     `;
     tbody.appendChild(tr);
   });
