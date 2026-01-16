@@ -1,5 +1,4 @@
 import { db } from "../config/firebase.js";
-import { showApp, showLogin } from "./router.js";
 import { loadDashboard } from "../modules/dashboard/dashboard.js";
 import { getSessionUser, setSessionUser, logout } from "./session.js";
 
@@ -13,10 +12,26 @@ import {
 const SUPER_PIN = "70513690";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const loginScreen = document.getElementById("login-screen");
+  const appScreen = document.getElementById("app-screen");
+
   const userSelect = document.getElementById("userSelect");
   const pinInput = document.getElementById("pinInput");
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+
+  // ==========================
+  // ROUTER SIMPLE (TEMPORAL)
+  // ==========================
+  function showLogin() {
+    loginScreen.style.display = "flex";
+    appScreen.style.display = "none";
+  }
+
+  function showApp() {
+    loginScreen.style.display = "none";
+    appScreen.style.display = "block";
+  }
 
   // ==========================
   // CARGAR USUARIOS ACTIVOS
@@ -60,9 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userId = userSelect.value;
     const pin = pinInput.value.trim();
 
-    // ==========================
     // SUPER ADMIN
-    // ==========================
     if (pin === SUPER_PIN) {
       setSessionUser({
         id: "super_admin",
@@ -116,7 +129,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // LOGOUT
   // ==========================
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", logout);
+    logoutBtn.addEventListener("click", () => {
+      logout();
+      showLogin();
+    });
   }
 
   // ==========================
