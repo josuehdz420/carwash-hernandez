@@ -1,0 +1,441 @@
+/* ======================================================
+   CARWASH HERNÁNDEZ — MÓDULOS
+   Estilo premium corregido
+====================================================== */
+
+/* ------------------------------------------------------
+   CONTENEDOR BASE
+------------------------------------------------------ */
+.module {
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: fadeUp 0.45s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+/* ------------------------------------------------------
+   HEADER DEL MÓDULO
+------------------------------------------------------ */
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Título */
+.module-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  color: white;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* ======================================================
+   BOTÓN VOLVER — NUEVO DISEÑO DESTACADO
+====================================================== */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  background: linear-gradient(135deg, #ffd84d, #ffb703);
+  color: #3a2a00;
+
+  border: none;
+  border-radius: 999px;
+
+  padding: 0.75rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-family: "Poppins", sans-serif;
+  letter-spacing: 0.3px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px rgba(255, 200, 50, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.25);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 32px rgba(255, 200, 50, 0.7),
+    0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* En móviles aún más visible */
+@media (max-width: 600px) {
+  .btn-back {
+    font-size: 1rem;
+    padding: 0.85rem 1.6rem;
+  }
+}
+
+/* ------------------------------------------------------
+   CONTENIDO
+------------------------------------------------------ */
+.module-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .module-content {
+    grid-template-columns: 1fr 1.2fr;
+    align-items: flex-start;
+  }
+}
+
+/* ------------------------------------------------------
+   FORMULARIOS
+------------------------------------------------------ */
+.form-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  padding: 1.4rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.form-card input,
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+}
+
+.form-card textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.form-card input:focus,
+.form-card select:focus,
+.form-card textarea:focus {
+  outline: none;
+  border-color: #6c4cf1;
+  box-shadow: 0 0 0 2px rgba(108, 76, 241, 0.18);
+}
+
+/* ------------------------------------------------------
+   ✅ CHECKBOX PAGO PENDIENTE — REDISEÑADO
+------------------------------------------------------ */
+.form-card .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.4rem;
+}
+
+/* Ocultamos checkbox nativo */
+.form-card .checkbox input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 42px;
+  height: 22px;
+  background: #ccc;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* Bolita */
+.form-card .checkbox input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+/* Activo */
+.form-card .checkbox input:checked {
+  background: linear-gradient(135deg, #6c4cf1, #4b32c3);
+}
+
+.form-card .checkbox input:checked::before {
+  transform: translateX(20px);
+}
+
+/* ------------------------------------------------------
+   BOTÓN PRINCIPAL FORM
+------------------------------------------------------ */
+.btn-primary {
+  background: linear-gradient(135deg, #6c4cf1, #4b32c3);
+  color: white;
+  border-radius: 18px;
+  padding: 0.9rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 14px 32px rgba(108, 76, 241, 0.45);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(108, 76, 241, 0.55);
+}
+
+/* ------------------------------------------------------
+   LISTADOS
+------------------------------------------------------ */
+.list-section {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  padding: 1.4rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.list-section h3 {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4b32c3;
+}
+
+/* ------------------------------------------------------
+   ITEMS
+------------------------------------------------------ */
+.lavado-item,
+.cliente-item {
+  background: linear-gradient(135deg, #ffffff, #f3f0ff);
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 10px 24px rgba(108, 76, 241, 0.22);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.lavado-info,
+.cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.lavado-info strong,
+.cliente-info strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.deuda-activa {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------
+   ACCIONES ICONOS
+------------------------------------------------------ */
+.lavado-actions,
+.cliente-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 12px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------ */
+@media (max-width: 600px) {
+  .lavado-item,
+  .cliente-item {
+    flex-direction: column;
+  }
+
+  .lavado-actions,
+  .cliente-actions {
+    justify-content: flex-end;
+  }
+
+  .module-title {
+    font-size: 1.4rem;
+  }
+}
+
+/* ------------------------------------------------------
+   ANIMACIÓN
+------------------------------------------------------ */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ======================================================
+   HISTORIAL
+====================================================== */
+.historial-module {
+  gap: 1.8rem;
+}
+
+/* Header con filtro */
+.historial-module .module-header {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.select-filter {
+  padding: 0.55rem 0.9rem;
+  border-radius: 14px;
+  border: none;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* ------------------------------------------------------
+   ZONA DE PELIGRO
+------------------------------------------------------ */
+.danger-zone {
+  background: linear-gradient(135deg, #ffdddd, #ffd1d1);
+  border: 2px solid #e63946;
+  border-radius: 22px;
+  padding: 1.2rem;
+  box-shadow: 0 14px 30px rgba(230, 57, 70, 0.35);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e63946, #c1121f);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  padding: 0.75rem 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(230, 57, 70, 0.45);
+}
+
+.btn-danger:hover {
+  transform: translateY(-1px);
+}
+
+.warning-text {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6a040f;
+}
+
+/* ------------------------------------------------------
+   SECCIONES DE TABLA
+------------------------------------------------------ */
+.table-section {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  padding: 1.2rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+  overflow-x: auto;
+}
+
+.table-section h3 {
+  margin: 0 0 0.6rem;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #4b32c3;
+}
+
+/* ------------------------------------------------------
+   TABLAS
+------------------------------------------------------ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table thead {
+  background: linear-gradient(135deg, #6c4cf1, #4b32c3);
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #f4f1ff;
+}
+
+.table tbody tr:hover {
+  background: #eae6ff;
+}
+
+/* ------------------------------------------------------
+   TARJETA DE TOTALES
+------------------------------------------------------ */
+.totals-card {
+  background: linear-gradient(135deg, #ffffff, #f1edff);
+  border-radius: 24px;
+  padding: 1.4rem;
+  box-shadow: 0 18px 40px rgba(108, 76, 241, 0.35);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.totals-card p {
+  margin: 0.3rem 0;
+}
+
+.totals-card .balance {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #4b32c3;
+}
