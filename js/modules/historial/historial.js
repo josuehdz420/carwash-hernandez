@@ -32,7 +32,7 @@ export async function loadHistorial() {
     <section class="module historial-module">
 
       <header class="module-header">
-        <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
+        <button id="btn-volver" class="btn btn-back">Volver</button>
         <h2 class="module-title">Historial</h2>
 
         <select id="filtro-historial" class="select-filter">

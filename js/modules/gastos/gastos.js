@@ -38,7 +38,7 @@ export async function loadGastos() {
     <section class="module gastos-module">
 
       <header class="module-header">
-        <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
+        <button id="btn-volver" class="btn btn-back">Volver</button>
         <h2 class="module-title">Gastos del día</h2>
       </header>
 

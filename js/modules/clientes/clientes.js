@@ -39,7 +39,7 @@ export async function loadClientes() {
     <section class="module clientes-module">
 
       <header class="module-header">
-        <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
+        <button id="btn-volver" class="btn btn-back">Volver</button>
         <h2 class="module-title">Clientes</h2>
       </header>
 

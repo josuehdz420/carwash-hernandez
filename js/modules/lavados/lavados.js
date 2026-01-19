@@ -49,7 +49,7 @@ export async function loadLavados() {
     <section class="module lavados-module">
 
       <header class="module-header">
-        <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
+        <button id="btn-volver" class="btn btn-back">Volver</button>
         <h2 class="module-title">
           ${editingLavadoId ? "Editar lavado" : "Registrar lavado"}
         </h2>

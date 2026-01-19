@@ -36,7 +36,7 @@ export async function loadUsuarios() {
     <section class="module usuarios-module">
 
       <header class="module-header">
-        <button id="btn-volver" class="btn btn-back">⬅ Volver</button>
+        <button id="btn-volver" class="btn btn-back">Volver</button>
         <h2 class="module-title">Usuarios</h2>
       </header>
 
