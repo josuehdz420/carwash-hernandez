@@ -35,92 +35,76 @@
 }
 
 /* ======================================================
-   BOTÓN VOLVER — VERSIÓN DEFINITIVA
+   BOTÓN VOLVER — BLANCO REAL (FORZADO)
 ====================================================== */
 .btn-back {
-  /* RESET TOTAL */
   all: unset;
 
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 0.6rem;
 
   cursor: pointer;
   user-select: none;
 
-  /* 🎨 COLOR Y CONTRASTE */
-  background: linear-gradient(135deg, #6c4cf1, #8e6cff);
-  color: #ffffff !important;
+  /* 🔒 FONDO BLANCO FORZADO */
+  background-color: #ffffff !important;
+  background-image: none !important;
 
-  padding: 0.8rem 1.3rem;
-  border-radius: 12px;
+  /* 🟦 TEXTO AZUL */
+  color: #4f46e5 !important;
+
+  padding: 0.85rem 1.4rem;
+  border-radius: 16px;
 
   font-size: 1.1rem;
   font-weight: 800;
-  letter-spacing: 0.3px;
+
+  /* ✨ BORDE + SOMBRA (SEPARACIÓN REAL) */
+  border: 2px solid rgba(79, 70, 229, 0.15);
 
   box-shadow:
-    0 6px 14px rgba(0, 0, 0, 0.35),
-    inset 0 -2px 0 rgba(255, 255, 255, 0.15);
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    0 0 0 4px rgba(255, 255, 255, 0.15);
+
+  position: relative;
+  z-index: 10;
 
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
-    background 0.2s ease;
-
-  /* ✨ ANIMACIÓN DE ENTRADA */
-  animation: backBtnPop 0.35s ease-out;
+    background-color 0.15s ease;
 }
 
-/* Flecha (ÚNICA) */
+/* Flecha (solo UNA, elimina duplicados visuales) */
 .btn-back::before {
   content: "←";
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 900;
-  margin-top: -1px;
+  color: inherit;
 }
 
 /* Hover */
 .btn-back:hover {
-  transform: translateY(-2px) scale(1.03);
+  background-color: #eef2ff !important;
+  transform: translateY(-2px) scale(1.04);
+
   box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.45),
-    inset 0 -2px 0 rgba(255, 255, 255, 0.2);
+    0 14px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 4px rgba(255, 255, 255, 0.25);
 }
 
 /* Active */
 .btn-back:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: scale(0.97);
 }
 
-/* Quitar subrayado SÍ O SÍ */
+/* Eliminar estilo de enlace definitivamente */
 .btn-back,
 .btn-back:hover,
 .btn-back:focus,
 .btn-back:active {
   text-decoration: none !important;
-}
-
-/* Animación */
-@keyframes backBtnPop {
-  from {
-    opacity: 0;
-    transform: translateX(-12px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .btn-back {
-    font-size: 1.15rem;
-    padding: 0.9rem 1.4rem;
-  }
 }
 
 
