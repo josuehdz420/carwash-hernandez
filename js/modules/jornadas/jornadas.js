@@ -22,6 +22,7 @@ function getTodayKey() {
 
 // ==========================
 // OBTENER JORNADA ACTIVA (HOY)
+// 🔴 NECESARIA para lavados.js
 // ==========================
 export async function getActiveJornada() {
   const todayKey = getTodayKey();
@@ -40,7 +41,7 @@ export async function getActiveJornada() {
 }
 
 // ==========================
-// OBTENER JORNADA DEL DÍA (ACTIVA O NO)
+// OBTENER JORNADA DEL DÍA
 // ==========================
 export async function getTodayJornada() {
   const todayKey = getTodayKey();
@@ -59,7 +60,6 @@ export async function getTodayJornada() {
 
 // ==========================
 // INICIAR JORNADA
-// (solo si NO existe ninguna hoy)
 // ==========================
 export async function startJornada() {
   const user = getSessionUser();
@@ -77,13 +77,14 @@ export async function startJornada() {
   );
 
   if (!existingSnap.empty) {
-    alert("Ya existe una jornada para hoy. Usa reanudar.");
+    alert("Ya existe una jornada para hoy.");
     return;
   }
 
   await addDoc(collection(db, "jornadas"), {
     date: todayKey,
     activa: true,
+    cerrada: false,
     inicio: serverTimestamp(),
     openedBy: user.name
   });
@@ -93,7 +94,6 @@ export async function startJornada() {
 
 // ==========================
 // REANUDAR JORNADA
-// (sin límite de veces)
 // ==========================
 export async function resumeJornada(jornadaId) {
   const user = getSessionUser();
@@ -113,6 +113,19 @@ export async function resumeJornada(jornadaId) {
     activa: true,
     reopenedAt: serverTimestamp(),
     reopenedBy: user.name
+  });
+
+  loadDashboard();
+}
+
+// ==========================
+// PAUSAR JORNADA (NO CIERRE)
+// ==========================
+export async function pauseJornada(jornadaId) {
+  if (!jornadaId) return;
+
+  await updateDoc(doc(db, "jornadas", jornadaId), {
+    activa: false
   });
 
   loadDashboard();

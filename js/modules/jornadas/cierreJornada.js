@@ -15,7 +15,101 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 // ==========================
-// CIERRE DE JORNADA
+// AUTO-CIERRE DE JORNADA
+// ==========================
+async function autoCerrarJornada(jornadaId, dateKey) {
+  const date = new Date(dateKey);
+
+  const endOfDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23, 59, 59
+  );
+
+  if (new Date() <= endOfDay) return false;
+
+  const start = Timestamp.fromDate(
+    new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  const end = Timestamp.fromDate(endOfDay);
+
+  let lavados = 0;
+  let pendientes = 0;
+  let ingresos = 0;
+  let gastos = 0;
+
+  // Lavados
+  const lavadosSnap = await getDocs(
+    query(
+      collection(db, "lavados"),
+      where("createdAt", ">=", start),
+      where("createdAt", "<=", end)
+    )
+  );
+
+  lavadosSnap.forEach(d => {
+    const l = d.data();
+    lavados++;
+
+    const price = l.price || 0;
+    const paid = l.paidAmount || 0;
+    if (paid < price) pendientes++;
+  });
+
+  // Pagos
+  const pagosSnap = await getDocs(
+    query(
+      collection(db, "pagos"),
+      where("createdAt", ">=", start),
+      where("createdAt", "<=", end)
+    )
+  );
+
+  pagosSnap.forEach(d => {
+    ingresos += d.data().amount || 0;
+  });
+
+  // Gastos
+  const gastosSnap = await getDocs(
+    query(
+      collection(db, "gastos"),
+      where("fecha", ">=", start),
+      where("fecha", "<=", end)
+    )
+  );
+
+  gastosSnap.forEach(d => {
+    gastos += d.data().monto || 0;
+  });
+
+  const balanceTeorico = ingresos - gastos;
+
+  await updateDoc(doc(db, "jornadas", jornadaId), {
+    activa: false,
+    cerrada: true,
+    autoCierre: true,
+    cierre: serverTimestamp(),
+    resumen: {
+      lavados,
+      ingresos,
+      gastos,
+      pendientes,
+      balanceTeorico
+    },
+    cuadre: {
+      hizoCuadre: false,
+      efectivoEsperado: ingresos,
+      efectivoReal: ingresos,
+      diferencia: 0
+    }
+  });
+
+  return true;
+}
+
+// ==========================
+// CIERRE DE JORNADA (MANUAL)
 // ==========================
 export async function loadCierreJornada(jornadaId, dateKey) {
   const user = getSessionUser();
@@ -28,6 +122,14 @@ export async function loadCierreJornada(jornadaId, dateKey) {
 
   if (!jornadaId || !dateKey) {
     alert("Jornada inválida");
+    loadDashboard();
+    return;
+  }
+
+  // 🔒 Intentar auto-cierre primero
+  const autoCerrada = await autoCerrarJornada(jornadaId, dateKey);
+  if (autoCerrada) {
+    alert("La jornada se cerró automáticamente al finalizar el día.");
     loadDashboard();
     return;
   }
@@ -66,9 +168,7 @@ export async function loadCierreJornada(jornadaId, dateKey) {
     if (paid < price) pendientes++;
   });
 
-  // ==========================
-  // PAGOS (INGRESOS REALES)
-  // ==========================
+  // PAGOS
   const pagosSnap = await getDocs(
     query(
       collection(db, "pagos"),
@@ -81,9 +181,7 @@ export async function loadCierreJornada(jornadaId, dateKey) {
     ingresos += d.data().amount || 0;
   });
 
-  // ==========================
   // GASTOS
-  // ==========================
   const gastosSnap = await getDocs(
     query(
       collection(db, "gastos"),
@@ -117,11 +215,7 @@ export async function loadCierreJornada(jornadaId, dateKey) {
         <p><strong>Balance teórico:</strong> $${balanceTeorico.toFixed(2)}</p>
       </div>
 
-      ${
-        pendientes > 0
-          ? `<p class="warning">⚠️ Existen lavados pendientes de pago</p>`
-          : ""
-      }
+      ${pendientes > 0 ? `<p class="warning">⚠️ Existen lavados pendientes</p>` : ""}
 
       <div class="cuadre-box">
         <label class="checkbox">
@@ -146,8 +240,7 @@ export async function loadCierreJornada(jornadaId, dateKey) {
     </section>
   `);
 
-  document
-    .getElementById("btn-volver")
+  document.getElementById("btn-volver")
     .addEventListener("click", loadDashboard);
 
   const chkCuadre = document.getElementById("hacer-cuadre");
@@ -159,23 +252,9 @@ export async function loadCierreJornada(jornadaId, dateKey) {
     if (!chkCuadre.checked) efectivoInput.value = "";
   });
 
-  // ==========================
-  // CONFIRMAR CIERRE
-  // ==========================
-  document
-    .getElementById("btn-confirmar")
+  document.getElementById("btn-confirmar")
     .addEventListener("click", async () => {
-      let mensaje =
-        "¿Deseas cerrar la jornada?\n\nEsta acción no se puede deshacer.";
-
-      if (pendientes > 0) {
-        mensaje =
-          "⚠️ Existen lavados pendientes.\n\n" +
-          "¿Deseas cerrar la jornada de todos modos?\n\n" +
-          "Esta acción no se puede deshacer.";
-      }
-
-      if (!confirm(mensaje)) return;
+      if (!confirm("¿Deseas cerrar la jornada?")) return;
 
       let cuadre = {
         hizoCuadre: false,
@@ -186,9 +265,8 @@ export async function loadCierreJornada(jornadaId, dateKey) {
 
       if (chkCuadre.checked) {
         const efectivoReal = parseFloat(efectivoInput.value);
-
         if (isNaN(efectivoReal)) {
-          alert("Ingresa el efectivo real en caja");
+          alert("Ingresa el efectivo real");
           return;
         }
 
@@ -196,14 +274,13 @@ export async function loadCierreJornada(jornadaId, dateKey) {
           hizoCuadre: true,
           efectivoEsperado: ingresos,
           efectivoReal,
-          diferencia: parseFloat(
-            (efectivoReal - ingresos).toFixed(2)
-          )
+          diferencia: Number((efectivoReal - ingresos).toFixed(2))
         };
       }
 
       await updateDoc(doc(db, "jornadas", jornadaId), {
         activa: false,
+        cerrada: true,
         cierre: serverTimestamp(),
         resumen: {
           lavados,

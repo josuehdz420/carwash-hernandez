@@ -36,7 +36,6 @@ export async function loadDashboard() {
   // JORNADA DEL DÍA
   // ==========================
   let jornada = null;
-  let jornadaActiva = false;
   let resumen = null;
   let cuadre = null;
 
@@ -47,10 +46,12 @@ export async function loadDashboard() {
   if (!jornadaSnap.empty) {
     const d = jornadaSnap.docs[0];
     jornada = { id: d.id, ...d.data() };
-    jornadaActiva = jornada.activa === true;
     resumen = jornada.resumen || null;
     cuadre = jornada.cuadre || null;
   }
+
+  const jornadaActiva = jornada?.activa === true;
+  const jornadaCerrada = jornada?.cerrada === true;
 
   // ==========================
   // NORMALIZAR RESUMEN / CUADRE
@@ -59,7 +60,7 @@ export async function loadDashboard() {
     resumen.lavados = Number(resumen.lavados) || 0;
     resumen.ingresos = Number(resumen.ingresos) || 0;
     resumen.gastos = Number(resumen.gastos) || 0;
-    resumen.balance = Number(resumen.balance) || 0;
+    resumen.balanceTeorico = Number(resumen.balanceTeorico) || 0;
   }
 
   if (cuadre) {
@@ -68,7 +69,7 @@ export async function loadDashboard() {
   }
 
   // ==========================
-  // STATS DEL DÍA
+  // STATS DEL DÍA (SOLO SI ACTIVA)
   // ==========================
   let lavadosHoy = 0;
   let ingresosHoy = 0;
@@ -127,16 +128,23 @@ export async function loadDashboard() {
 
   // ---- Jornada
   if (!jornada) {
-    htmlJornada = `<button id="btn-iniciar-jornada" class="btn btn-success">Iniciar jornada</button>`;
+    htmlJornada = `
+      <button id="btn-iniciar-jornada" class="btn btn-success">
+        Iniciar jornada
+      </button>
+    `;
   } else if (jornadaActiva) {
     htmlJornada = `
       <p class="jornada-status active">🟢 Jornada activa</p>
-      <button id="btn-cerrar-jornada" class="btn btn-danger">Cerrar jornada</button>
+      <button id="btn-cerrar-jornada" class="btn btn-danger">
+        Cerrar jornada
+      </button>
     `;
-  } else {
+  } else if (jornadaCerrada) {
     htmlJornada = `
-      <p class="jornada-status closed">🔴 Jornada cerrada</p>
-      <button id="btn-reanudar-jornada" class="btn btn-warning">Reanudar jornada</button>
+      <p class="jornada-status closed">
+        🔴 Jornada cerrada (día finalizado)
+      </p>
     `;
   }
 
@@ -184,11 +192,11 @@ export async function loadDashboard() {
         <div class="stat-card"><h3>Lavados</h3><p>${resumen.lavados}</p></div>
         <div class="stat-card"><h3>Ingresos</h3><p>$${resumen.ingresos.toFixed(2)}</p></div>
         <div class="stat-card"><h3>Gastos</h3><p>$${resumen.gastos.toFixed(2)}</p></div>
-        <div class="stat-card"><h3>Balance</h3><p>$${resumen.balance.toFixed(2)}</p></div>
+        <div class="stat-card"><h3>Balance</h3><p>$${resumen.balanceTeorico.toFixed(2)}</p></div>
       </section>
     `;
 
-    if (cuadre && cuadre.hizoCuadre) {
+    if (cuadre?.hizoCuadre) {
       htmlStats += `
         <section class="dashboard-stats">
           <div class="stat-card ${cuadre.diferencia === 0 ? "ok" : "error"}">
@@ -207,12 +215,16 @@ export async function loadDashboard() {
       `;
     }
   } else {
-    htmlStats = `<p class="warning">No hay jornada activa</p>`;
+    htmlStats = `<p class="warning">No hay jornada iniciada hoy</p>`;
   }
 
   // ---- Acciones
   if (jornadaActiva) {
-    htmlActions += `<button id="btn-lavado" class="btn btn-primary">Registrar lavado</button>`;
+    htmlActions += `
+      <button id="btn-lavado" class="btn btn-primary">
+        Registrar lavado
+      </button>
+    `;
   }
 
   if (isAdmin) {
@@ -224,7 +236,9 @@ export async function loadDashboard() {
   }
 
   if (user.role === "super_admin") {
-    htmlActions += `<button id="btn-usuarios" class="btn btn-secondary">Usuarios</button>`;
+    htmlActions += `
+      <button id="btn-usuarios" class="btn btn-secondary">Usuarios</button>
+    `;
   }
 
   // ==========================
@@ -259,11 +273,6 @@ export async function loadDashboard() {
     startJornada();
   });
 
-  document.getElementById("btn-reanudar-jornada")?.addEventListener("click", async () => {
-    const { resumeJornada } = await import("../jornadas/jornadas.js");
-    resumeJornada(jornada.id);
-  });
-
   document.getElementById("btn-cerrar-jornada")?.addEventListener("click", () => {
     loadCierreJornada(jornada.id, todayKey);
   });
@@ -286,8 +295,12 @@ async function cargarGraficoSemanal() {
     const d = new Date();
     d.setDate(d.getDate() - i);
 
-    const start = Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
-    const end = Timestamp.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59));
+    const start = Timestamp.fromDate(
+      new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    );
+    const end = Timestamp.fromDate(
+      new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59)
+    );
 
     let total = 0;
     const snap = await getDocs(
@@ -298,17 +311,23 @@ async function cargarGraficoSemanal() {
       )
     );
 
-    snap.forEach(p => total += p.data().amount || 0);
+    snap.forEach(p => (total += p.data().amount || 0));
 
     labels.push(d.toLocaleDateString("es-ES", { weekday: "short" }));
-    data.push(Number(total) || 0);
+    data.push(total);
   }
 
   grafico = new Chart(document.getElementById("grafico-semanal"), {
     type: "bar",
     data: {
       labels,
-      datasets: [{ label: "Ingresos", data, backgroundColor: "#4CAF50" }]
+      datasets: [
+        {
+          label: "Ingresos",
+          data,
+          backgroundColor: "#6C4CF1"
+        }
+      ]
     }
   });
 }

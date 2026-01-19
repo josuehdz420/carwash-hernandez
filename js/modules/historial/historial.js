@@ -62,7 +62,7 @@ export async function loadHistorial() {
 
         <!-- JORNADAS -->
         <section class="table-section">
-          <h3>Jornadas</h3>
+          <h3>Jornadas cerradas</h3>
           <table class="table">
             <thead>
               <tr>
@@ -227,29 +227,31 @@ function obtenerRangoFechas(tipo) {
 }
 
 // ==========================
-// JORNADAS
+// JORNADAS (CERRADAS)
 // ==========================
 async function cargarJornadas(start, end) {
   const tbody = document.getElementById("tabla-jornadas");
   tbody.innerHTML = "";
 
-  const q = query(
-    collection(db, "jornadas"),
-    where("createdAt", ">=", start),
-    where("createdAt", "<=", end),
-    orderBy("createdAt", "desc")
+  const snap = await getDocs(
+    query(collection(db, "jornadas"), where("activa", "==", false))
   );
 
-  const snap = await getDocs(q);
+  const filas = snap.docs.filter(d => {
+    const j = d.data();
+    if (!j.cierre || !j.resumen) return false;
 
-  if (snap.empty) {
-    tbody.innerHTML = `<tr><td colspan="6">Sin jornadas</td></tr>`;
+    const cierre = j.cierre.toDate();
+    return cierre >= start.toDate() && cierre <= end.toDate();
+  });
+
+  if (filas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">Sin jornadas cerradas</td></tr>`;
     return;
   }
 
-  snap.forEach(d => {
+  filas.forEach(d => {
     const j = d.data();
-    const fecha = j.createdAt?.toDate().toLocaleDateString() || "-";
 
     const cuadre =
       j.cuadre?.hizoCuadre
@@ -260,16 +262,17 @@ async function cargarJornadas(start, end) {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${fecha}</td>
-      <td>${j.resumen?.lavados ?? 0}</td>
-      <td>$${(j.resumen?.ingresos ?? 0).toFixed(2)}</td>
-      <td>$${(j.resumen?.gastos ?? 0).toFixed(2)}</td>
-      <td>$${(j.resumen?.balance ?? 0).toFixed(2)}</td>
+      <td>${j.date}</td>
+      <td>${j.resumen.lavados}</td>
+      <td>$${j.resumen.ingresos.toFixed(2)}</td>
+      <td>$${j.resumen.gastos.toFixed(2)}</td>
+      <td>$${j.resumen.balanceTeorico.toFixed(2)}</td>
       <td>${cuadre}</td>
     `;
     tbody.appendChild(tr);
   });
 }
+
 // ==========================
 // LAVADOS
 // ==========================
@@ -277,14 +280,14 @@ async function cargarLavados(start, end) {
   const tbody = document.getElementById("tabla-lavados");
   tbody.innerHTML = "";
 
-  const q = query(
-    collection(db, "lavados"),
-    where("createdAt", ">=", start),
-    where("createdAt", "<=", end),
-    orderBy("createdAt", "desc")
+  const snap = await getDocs(
+    query(
+      collection(db, "lavados"),
+      where("createdAt", ">=", start),
+      where("createdAt", "<=", end),
+      orderBy("createdAt", "desc")
+    )
   );
-
-  const snap = await getDocs(q);
 
   if (snap.empty) {
     tbody.innerHTML = `<tr><td colspan="6">Sin lavados</td></tr>`;
@@ -331,14 +334,14 @@ async function cargarPagos(start, end) {
 
   let total = 0;
 
-  const q = query(
-    collection(db, "pagos"),
-    where("createdAt", ">=", start),
-    where("createdAt", "<=", end),
-    orderBy("createdAt", "desc")
+  const snap = await getDocs(
+    query(
+      collection(db, "pagos"),
+      where("createdAt", ">=", start),
+      where("createdAt", "<=", end),
+      orderBy("createdAt", "desc")
+    )
   );
-
-  const snap = await getDocs(q);
 
   if (snap.empty) {
     tbody.innerHTML = `<tr><td colspan="4">Sin pagos</td></tr>`;
@@ -374,14 +377,14 @@ async function cargarGastos(start, end) {
 
   let total = 0;
 
-  const q = query(
-    collection(db, "gastos"),
-    where("fecha", ">=", start),
-    where("fecha", "<=", end),
-    orderBy("fecha", "desc")
+  const snap = await getDocs(
+    query(
+      collection(db, "gastos"),
+      where("fecha", ">=", start),
+      where("fecha", "<=", end),
+      orderBy("fecha", "desc")
+    )
   );
-
-  const snap = await getDocs(q);
 
   if (snap.empty) {
     tbody.innerHTML = `<tr><td colspan="4">Sin gastos</td></tr>`;
