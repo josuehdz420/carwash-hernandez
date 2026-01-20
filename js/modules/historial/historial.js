@@ -9,7 +9,6 @@ import {
   query,
   where,
   Timestamp,
-  orderBy,
   deleteDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
@@ -60,7 +59,6 @@ export async function loadHistorial() {
 
       <main class="module-content">
 
-        <!-- JORNADAS -->
         <section class="table-section">
           <h3>Jornadas cerradas</h3>
           <table class="table">
@@ -78,7 +76,6 @@ export async function loadHistorial() {
           </table>
         </section>
 
-        <!-- LAVADOS -->
         <section class="table-section">
           <h3>Lavados</h3>
           <table class="table">
@@ -96,7 +93,6 @@ export async function loadHistorial() {
           </table>
         </section>
 
-        <!-- PAGOS -->
         <section class="table-section">
           <h3>Pagos</h3>
           <table class="table">
@@ -112,7 +108,6 @@ export async function loadHistorial() {
           </table>
         </section>
 
-        <!-- GASTOS -->
         <section class="table-section">
           <h3>Gastos</h3>
           <table class="table">
@@ -227,7 +222,7 @@ function obtenerRangoFechas(tipo) {
 }
 
 // ==========================
-// JORNADAS (CERRADAS)
+// JORNADAS
 // ==========================
 async function cargarJornadas(start, end) {
   const tbody = document.getElementById("tabla-jornadas");
@@ -237,22 +232,21 @@ async function cargarJornadas(start, end) {
     query(collection(db, "jornadas"), where("activa", "==", false))
   );
 
-  const filas = snap.docs.filter(d => {
-    const j = d.data();
-    if (!j.cierre || !j.resumen) return false;
-
-    const cierre = j.cierre.toDate();
-    return cierre >= start.toDate() && cierre <= end.toDate();
-  });
+  const filas = snap.docs
+    .map(d => d.data())
+    .filter(j => {
+      if (!j.cierre || !j.resumen) return false;
+      const cierre = j.cierre.toDate();
+      return cierre >= start.toDate() && cierre <= end.toDate();
+    })
+    .sort((a, b) => b.cierre.toDate() - a.cierre.toDate());
 
   if (filas.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6">Sin jornadas cerradas</td></tr>`;
     return;
   }
 
-  filas.forEach(d => {
-    const j = d.data();
-
+  filas.forEach(j => {
     const cuadre =
       j.cuadre?.hizoCuadre
         ? j.cuadre.diferencia === 0
@@ -284,26 +278,41 @@ async function cargarLavados(start, end) {
     query(
       collection(db, "lavados"),
       where("createdAt", ">=", start),
-      where("createdAt", "<=", end),
-      orderBy("createdAt", "desc")
+      where("createdAt", "<=", end)
     )
   );
 
-  if (snap.empty) {
+  const docs = snap.docs.sort(
+    (a, b) => b.data().createdAt.toDate() - a.data().createdAt.toDate()
+  );
+
+  if (docs.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6">Sin lavados</td></tr>`;
     return;
   }
 
-  snap.forEach(d => {
+  docs.forEach(d => {
     const l = d.data();
     const fecha = l.createdAt?.toDate().toLocaleString() || "-";
 
-    const paid = l.paidAmount || 0;
     const price = l.price || 0;
+    const paid = l.paidAmount || 0;
 
     let estado = "Pendiente";
-    if (paid >= price) estado = "Pagado";
+    if (price === 0) estado = "Gratis";
+    else if (paid >= price) estado = "Pagado";
     else if (paid > 0) estado = "Parcial";
+
+    const importe =
+      price === 0
+        ? `<span class="gratis">Gratis</span>`
+        : `
+          $${price.toFixed(2)}<br>
+          <small>
+            Pagado: $${paid.toFixed(2)}<br>
+            Debe: $${(price - paid).toFixed(2)}
+          </small>
+        `;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -311,13 +320,7 @@ async function cargarLavados(start, end) {
       <td>${l.vehicleType}</td>
       <td>${l.clientName || "Anónimo"}</td>
       <td>${estado}</td>
-      <td>
-        $${price.toFixed(2)}<br>
-        <small>
-          Pagado: $${paid.toFixed(2)}<br>
-          Debe: $${(price - paid).toFixed(2)}
-        </small>
-      </td>
+      <td>${importe}</td>
       <td>${l.reportedBy || "-"}</td>
     `;
     tbody.appendChild(tr);
@@ -338,26 +341,30 @@ async function cargarPagos(start, end) {
     query(
       collection(db, "pagos"),
       where("createdAt", ">=", start),
-      where("createdAt", "<=", end),
-      orderBy("createdAt", "desc")
+      where("createdAt", "<=", end)
     )
   );
 
-  if (snap.empty) {
+  const docs = snap.docs.sort(
+    (a, b) => b.data().createdAt.toDate() - a.data().createdAt.toDate()
+  );
+
+  if (docs.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4">Sin pagos</td></tr>`;
     totalSpan.textContent = "0.00";
     return 0;
   }
 
-  snap.forEach(d => {
+  docs.forEach(d => {
     const p = d.data();
-    total += p.amount || 0;
+    const monto = p.amount || 0;
+    total += monto;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.createdAt.toDate().toLocaleString()}</td>
       <td>${p.clientName || "Anónimo"}</td>
-      <td>$${p.amount.toFixed(2)}</td>
+      <td>${monto === 0 ? "Gratis" : `$${monto.toFixed(2)}`}</td>
       <td>${p.origen || "-"}</td>
     `;
     tbody.appendChild(tr);
@@ -381,18 +388,21 @@ async function cargarGastos(start, end) {
     query(
       collection(db, "gastos"),
       where("fecha", ">=", start),
-      where("fecha", "<=", end),
-      orderBy("fecha", "desc")
+      where("fecha", "<=", end)
     )
   );
 
-  if (snap.empty) {
+  const docs = snap.docs.sort(
+    (a, b) => b.data().fecha.toDate() - a.data().fecha.toDate()
+  );
+
+  if (docs.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4">Sin gastos</td></tr>`;
     totalSpan.textContent = "0.00";
     return 0;
   }
 
-  snap.forEach(d => {
+  docs.forEach(d => {
     const g = d.data();
     total += g.monto || 0;
 

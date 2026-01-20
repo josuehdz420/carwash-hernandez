@@ -77,7 +77,7 @@ export async function loadLavados() {
             step="0.01"
             min="0"
             required
-            placeholder="Precio"
+            placeholder="Precio (0 = Gratis)"
           />
 
           <select id="cliente">${clientesOptions}</select>
@@ -87,7 +87,7 @@ export async function loadLavados() {
             Pago pendiente
           </label>
 
-          <button type="submit" id="submit-btn" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary">
             ${editingLavadoId ? "Actualizar lavado" : "Guardar lavado"}
           </button>
 
@@ -123,7 +123,7 @@ async function saveLavado(e) {
   const clientId = document.getElementById("cliente").value || null;
   const pendiente = document.getElementById("pendiente").checked;
 
-  if (!vehicleType || isNaN(price) || price <= 0) {
+  if (!vehicleType || isNaN(price) || price < 0) {
     alert("Datos inválidos");
     return;
   }
@@ -139,7 +139,7 @@ async function saveLavado(e) {
     if (snap.exists()) clientName = snap.data().name;
   }
 
-  const pagado = !pendiente;
+  const pagado = price === 0 ? false : !pendiente;
   const paidAmount = pagado ? price : 0;
 
   // ==========================
@@ -151,9 +151,8 @@ async function saveLavado(e) {
 
     const l = snap.data();
 
-    // Bloqueo SOLO si hubo pagos desde clientes
-    if (l.paidAmount > 0 && !l.pagado) {
-      alert("No se puede editar un lavado con pagos aplicados");
+    if (l.pagoGenerado && pendiente) {
+      alert("Este lavado ya fue pagado y no puede volver a pendiente");
       return;
     }
 
@@ -165,11 +164,10 @@ async function saveLavado(e) {
       clientName,
       pagado,
       paidAmount,
-      locked: pagado
+      pagoGenerado: pagado || l.pagoGenerado
     });
 
-    // Si ahora se marca como pagado
-    if (pagado && l.paidAmount === 0) {
+    if (pagado && !l.pagoGenerado && price > 0) {
       await addDoc(collection(db, "pagos"), {
         clientId,
         clientName,
@@ -197,12 +195,12 @@ async function saveLavado(e) {
       clientName,
       paidAmount,
       pagado,
-      locked: pagado,
+      pagoGenerado: pagado,
       createdAt: serverTimestamp(),
       reportedBy: user.name
     });
 
-    if (pagado) {
+    if (pagado && price > 0) {
       await addDoc(collection(db, "pagos"), {
         clientId,
         clientName,
@@ -249,10 +247,21 @@ async function loadLavadosDelDia() {
   snap.forEach(d => {
     const l = d.data();
     const hora = l.createdAt?.toDate().toLocaleTimeString() || "--";
-    const pendiente = (l.price - (l.paidAmount || 0)).toFixed(2);
 
-    const puedeEditar = !(l.paidAmount > 0 && !l.pagado);
-    const puedeEliminar = l.pagado && l.paidAmount === l.price;
+    const pendienteMonto = l.price - (l.paidAmount || 0);
+    const tieneDeuda = pendienteMonto > 0;
+
+    const textoPrecio =
+      l.price === 0
+        ? `<span class="gratis">Gratis</span>`
+        : `
+          Precio: $${l.price.toFixed(2)} |
+          Pagado: $${(l.paidAmount || 0).toFixed(2)} |
+          Pendiente: $${pendienteMonto.toFixed(2)}
+        `;
+
+    const puedeEditar = !l.pagoGenerado;
+    const puedeEliminar = !tieneDeuda;
 
     const div = document.createElement("div");
     div.className = "lavado-item";
@@ -262,11 +271,7 @@ async function loadLavadosDelDia() {
         <strong>${l.vehicleType}</strong> — ${l.clientName}
         ${l.description ? `<small>${l.description}</small>` : ""}
         <small>${hora}</small>
-        <small>
-          Precio: $${l.price.toFixed(2)} |
-          Pagado: $${(l.paidAmount || 0).toFixed(2)} |
-          Pendiente: $${pendiente}
-        </small>
+        <small>${textoPrecio}</small>
       </div>
 
       ${
@@ -274,7 +279,11 @@ async function loadLavadosDelDia() {
           ? `
         <div class="lavado-actions">
           <button class="btn-icon edit" data-id="${d.id}" ${!puedeEditar ? "disabled" : ""}>✏️</button>
-          <button class="btn-icon delete" data-id="${d.id}" ${!puedeEliminar ? "disabled" : ""}>🗑</button>
+          ${
+            puedeEliminar
+              ? `<button class="btn-icon delete" data-id="${d.id}">🗑</button>`
+              : ""
+          }
         </div>`
           : ""
       }
@@ -296,25 +305,42 @@ function bindLavadoActions() {
       if (!snap.exists()) return;
 
       const l = snap.data();
-
-      if (l.paidAmount > 0 && !l.pagado) {
-        alert("Lavado con pagos aplicados, no editable");
-        return;
-      }
-
       editingLavadoId = btn.dataset.id;
 
       document.getElementById("vehicleType").value = l.vehicleType;
       document.getElementById("description").value = l.description || "";
       document.getElementById("price").value = l.price;
       document.getElementById("cliente").value = l.clientId || "";
-      document.getElementById("pendiente").checked = !l.pagado;
+
+      const chk = document.getElementById("pendiente");
+      chk.checked = !l.pagado;
+      chk.disabled = l.pagoGenerado === true;
     });
   });
 
   document.querySelectorAll(".delete").forEach(btn => {
     btn.addEventListener("click", async () => {
+      const snap = await getDoc(doc(db, "lavados", btn.dataset.id));
+      if (!snap.exists()) return;
+
+      const l = snap.data();
+      const pendiente = l.price - (l.paidAmount || 0);
+
+      if (pendiente > 0) {
+        alert("No se puede eliminar un lavado con pago pendiente");
+        return;
+      }
+
       if (!confirm("¿Eliminar lavado?")) return;
+
+      const pagosSnap = await getDocs(
+        query(collection(db, "pagos"), where("lavadoId", "==", btn.dataset.id))
+      );
+
+      for (const p of pagosSnap.docs) {
+        await deleteDoc(doc(db, "pagos", p.id));
+      }
+
       await deleteDoc(doc(db, "lavados", btn.dataset.id));
       loadLavados();
     });

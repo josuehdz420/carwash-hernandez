@@ -22,6 +22,7 @@ import {
 // ESTADO
 // ==========================
 let editingClienteId = null;
+let clienteAbiertoId = null;
 
 // ==========================
 // CARGAR MÓDULO
@@ -58,10 +59,7 @@ export async function loadClientes() {
         <section class="list-section">
           <h3>Listado de clientes</h3>
 
-          <input
-            id="search-clientes"
-            placeholder="🔍 Buscar cliente..."
-          />
+          <input id="search-clientes" placeholder="🔍 Buscar cliente..." />
 
           <div id="clientes-list"></div>
         </section>
@@ -72,10 +70,7 @@ export async function loadClientes() {
   `);
 
   document.getElementById("btn-volver").addEventListener("click", loadDashboard);
-  document
-    .getElementById("cliente-form")
-    .addEventListener("submit", saveCliente);
-
+  document.getElementById("cliente-form").addEventListener("submit", saveCliente);
   document
     .getElementById("search-clientes")
     .addEventListener("input", loadClientesList);
@@ -120,7 +115,7 @@ async function saveCliente(e) {
 }
 
 // ==========================
-// LISTADO + BUSCADOR
+// LISTADO
 // ==========================
 async function loadClientesList() {
   const container = document.getElementById("clientes-list");
@@ -139,35 +134,35 @@ async function loadClientesList() {
     return;
   }
 
-  for (const docSnap of snapshot.docs) {
-    const c = docSnap.data();
-
+  for (const snap of snapshot.docs) {
+    const c = snap.data();
     if (filtro && !c.name.toLowerCase().includes(filtro)) continue;
 
-    const deuda = await calcularDeudaCliente(docSnap.id);
+    const deuda = await calcularDeudaCliente(snap.id);
 
     const div = document.createElement("div");
     div.className = "cliente-item";
 
     div.innerHTML = `
-      <div class="cliente-info">
+      <div class="cliente-info cliente-toggle" data-id="${snap.id}">
         <strong>${c.name}</strong>
         <small>Tel: ${c.phone || "-"}</small>
-        <small>Nota: ${c.note || "-"}</small>
         <small class="${deuda > 0 ? "deuda-activa" : ""}">
           Deuda: $${deuda.toFixed(2)}
         </small>
       </div>
 
       <div class="cliente-actions">
-        <button class="btn-icon edit-btn" data-id="${docSnap.id}">✏️</button>
+        <button class="btn-icon edit-btn" data-id="${snap.id}">✏️</button>
         ${
           deuda > 0
-            ? `<button class="btn-icon pay-btn" data-id="${docSnap.id}">💰</button>`
+            ? `<button class="btn-icon pay-btn" data-id="${snap.id}">💰</button>`
             : ""
         }
-        <button class="btn-icon delete-btn" data-id="${docSnap.id}">🗑</button>
+        <button class="btn-icon delete-btn" data-id="${snap.id}">🗑</button>
       </div>
+
+      <div class="cliente-expediente" id="exp-${snap.id}" style="display:none"></div>
     `;
 
     container.appendChild(div);
@@ -180,9 +175,31 @@ async function loadClientesList() {
 // ACCIONES
 // ==========================
 function bindClienteActions() {
+  // ABRIR EXPEDIENTE
+  document.querySelectorAll(".cliente-toggle").forEach(div => {
+    div.addEventListener("click", async () => {
+      const id = div.dataset.id;
+
+      if (clienteAbiertoId && clienteAbiertoId !== id) {
+        document.getElementById(`exp-${clienteAbiertoId}`).style.display = "none";
+      }
+
+      const panel = document.getElementById(`exp-${id}`);
+      if (panel.style.display === "block") {
+        panel.style.display = "none";
+        clienteAbiertoId = null;
+      } else {
+        await cargarExpedienteCliente(id, panel);
+        panel.style.display = "block";
+        clienteAbiertoId = id;
+      }
+    });
+  });
+
   // EDITAR
   document.querySelectorAll(".edit-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async e => {
+      e.stopPropagation();
       const snap = await getDoc(doc(db, "clientes", btn.dataset.id));
       if (!snap.exists()) return;
 
@@ -197,9 +214,11 @@ function bindClienteActions() {
     });
   });
 
-  // REGISTRAR PAGO
+  // PAGAR
   document.querySelectorAll(".pay-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async e => {
+      e.stopPropagation();
+
       const jornada = await getActiveJornada();
       if (!jornada) {
         alert("No hay jornada activa");
@@ -223,6 +242,7 @@ function bindClienteActions() {
 
       let restante = pago;
 
+      // PAGAR LAVADOS (SIN orderBy)
       const lavadosSnap = await getDocs(
         query(
           collection(db, "lavados"),
@@ -231,26 +251,40 @@ function bindClienteActions() {
         )
       );
 
-      const lavadosOrdenados = lavadosSnap.docs.sort(
-        (a, b) =>
-          a.data().createdAt?.seconds - b.data().createdAt?.seconds
-      );
-
-      for (const d of lavadosOrdenados) {
+      for (const d of lavadosSnap.docs) {
         if (restante <= 0) break;
 
         const l = d.data();
-        const paid = l.paidAmount || 0;
-        const price = l.price || 0;
-        const pendiente = price - paid;
+        const pendiente = (l.price || 0) - (l.paidAmount || 0);
         const aplicar = Math.min(pendiente, restante);
 
-        const nuevoPagado = paid + aplicar;
+        const nuevoPagado = (l.paidAmount || 0) + aplicar;
 
         await updateDoc(doc(db, "lavados", d.id), {
           paidAmount: nuevoPagado,
-          pagado: nuevoPagado >= price,
-          locked: nuevoPagado >= price
+          pagado: nuevoPagado >= l.price,
+          locked: nuevoPagado >= l.price
+        });
+
+        restante -= aplicar;
+      }
+
+      // PAGAR DEUDAS MANUALES (SIN orderBy)
+      const manualSnap = await getDocs(
+        collection(db, "clientes", clientId, "deudas_manuales")
+      );
+
+      for (const d of manualSnap.docs) {
+        if (restante <= 0) break;
+
+        const m = d.data();
+        const pendiente = (m.amount || 0) - (m.paidAmount || 0);
+        if (pendiente <= 0) continue;
+
+        const aplicar = Math.min(pendiente, restante);
+
+        await updateDoc(d.ref, {
+          paidAmount: (m.paidAmount || 0) + aplicar
         });
 
         restante -= aplicar;
@@ -274,9 +308,10 @@ function bindClienteActions() {
 
   // ELIMINAR
   document.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const deuda = await calcularDeudaCliente(btn.dataset.id);
+    btn.addEventListener("click", async e => {
+      e.stopPropagation();
 
+      const deuda = await calcularDeudaCliente(btn.dataset.id);
       if (deuda > 0) {
         alert("No se puede eliminar un cliente con deuda");
         return;
@@ -291,7 +326,88 @@ function bindClienteActions() {
 }
 
 // ==========================
-// CALCULAR DEUDA REAL
+// EXPEDIENTE
+// ==========================
+async function cargarExpedienteCliente(clientId, panel) {
+  panel.innerHTML = "<p>Cargando...</p>";
+
+  let html = `<h4>Deudas pendientes</h4><ul>`;
+
+  // LAVADOS (SIN orderBy)
+  const lavadosSnap = await getDocs(
+    query(
+      collection(db, "lavados"),
+      where("clientId", "==", clientId),
+      where("pagado", "==", false)
+    )
+  );
+
+  lavadosSnap.forEach(d => {
+    const l = d.data();
+    const fecha = l.createdAt?.toDate().toLocaleDateString() || "-";
+    html += `
+      <li>
+        ${fecha} — ${l.vehicleType}<br>
+        $${l.price} | Pagado: $${l.paidAmount || 0}
+      </li>
+    `;
+  });
+
+  // MANUALES (SIN orderBy)
+  const manualSnap = await getDocs(
+    collection(db, "clientes", clientId, "deudas_manuales")
+  );
+
+  manualSnap.forEach(d => {
+    const m = d.data();
+    const fecha = m.createdAt?.toDate().toLocaleDateString() || "-";
+    html += `
+      <li>
+        ${fecha} — ${m.note}<br>
+        $${m.amount} | Pagado: $${m.paidAmount || 0}
+      </li>
+    `;
+  });
+
+  html += `</ul>
+    <button class="btn btn-secondary" id="add-manual-${clientId}">
+      ➕ Agregar deuda manual
+    </button>
+  `;
+
+  panel.innerHTML = html;
+
+  document
+    .getElementById(`add-manual-${clientId}`)
+    .addEventListener("click", async () => {
+      const note = prompt("Motivo de la deuda:");
+      if (!note) return;
+
+      const amount = parseFloat(prompt("Monto:"));
+      if (isNaN(amount) || amount <= 0) {
+        alert("Monto inválido");
+        return;
+      }
+
+      const user = getSessionUser();
+
+      await addDoc(
+        collection(db, "clientes", clientId, "deudas_manuales"),
+        {
+          note,
+          amount,
+          paidAmount: 0,
+          createdAt: serverTimestamp(),
+          reportedBy: user.name
+        }
+      );
+
+      loadClientesList();
+    });
+}
+
+// ==========================
+// DEUDA TOTAL
 // ==========================
 async function calcularDeudaCliente(clientId) {
   let total = 0;
@@ -307,6 +423,15 @@ async function calcularDeudaCliente(clientId) {
   lavadosSnap.forEach(d => {
     const l = d.data();
     total += (l.price || 0) - (l.paidAmount || 0);
+  });
+
+  const manualSnap = await getDocs(
+    collection(db, "clientes", clientId, "deudas_manuales")
+  );
+
+  manualSnap.forEach(d => {
+    const m = d.data();
+    total += (m.amount || 0) - (m.paidAmount || 0);
   });
 
   return total > 0 ? total : 0;

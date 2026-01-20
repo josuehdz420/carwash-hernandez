@@ -54,7 +54,7 @@ export async function loadDashboard() {
   const jornadaCerrada = jornada?.cerrada === true;
 
   // ==========================
-  // NORMALIZAR RESUMEN / CUADRE
+  // NORMALIZAR
   // ==========================
   if (resumen) {
     resumen.lavados = Number(resumen.lavados) || 0;
@@ -69,7 +69,7 @@ export async function loadDashboard() {
   }
 
   // ==========================
-  // STATS DEL DÍA (SOLO SI ACTIVA)
+  // STATS DEL DÍA
   // ==========================
   let lavadosHoy = 0;
   let ingresosHoy = 0;
@@ -107,8 +107,7 @@ export async function loadDashboard() {
       const pagosSnap = await getDocs(
         query(
           collection(db, "pagos"),
-          where("createdAt", ">=", start),
-          where("createdAt", "<=", end)
+          where("jornadaId", "==", jornada.id)
         )
       );
 
@@ -126,7 +125,6 @@ export async function loadDashboard() {
   let htmlChart = "";
   let htmlActions = "";
 
-  // ---- Jornada
   if (!jornada) {
     htmlJornada = `
       <button id="btn-iniciar-jornada" class="btn btn-success">
@@ -148,7 +146,6 @@ export async function loadDashboard() {
     `;
   }
 
-  // ---- Stats
   if (jornadaActiva) {
     htmlStats = `
       <section class="dashboard-stats">
@@ -195,30 +192,10 @@ export async function loadDashboard() {
         <div class="stat-card"><h3>Balance</h3><p>$${resumen.balanceTeorico.toFixed(2)}</p></div>
       </section>
     `;
-
-    if (cuadre?.hizoCuadre) {
-      htmlStats += `
-        <section class="dashboard-stats">
-          <div class="stat-card ${cuadre.diferencia === 0 ? "ok" : "error"}">
-            <h3>Cuadre</h3>
-            <p>${cuadre.diferencia === 0 ? "🟢 Cuadrado" : "🔴 Diferencia"}</p>
-          </div>
-          <div class="stat-card">
-            <h3>Efectivo real</h3>
-            <p>$${cuadre.efectivoReal.toFixed(2)}</p>
-          </div>
-          <div class="stat-card">
-            <h3>Diferencia</h3>
-            <p>$${cuadre.diferencia.toFixed(2)}</p>
-          </div>
-        </section>
-      `;
-    }
   } else {
     htmlStats = `<p class="warning">No hay jornada iniciada hoy</p>`;
   }
 
-  // ---- Acciones
   if (jornadaActiva) {
     htmlActions += `
       <button id="btn-lavado" class="btn btn-primary">
@@ -241,9 +218,6 @@ export async function loadDashboard() {
     `;
   }
 
-  // ==========================
-  // RENDER
-  // ==========================
   loadView(`
     <section class="dashboard">
       <header class="dashboard-header">
@@ -259,9 +233,6 @@ export async function loadDashboard() {
     </section>
   `);
 
-  // ==========================
-  // EVENTOS
-  // ==========================
   document.getElementById("btn-lavado")?.addEventListener("click", loadLavados);
   document.getElementById("btn-gastos")?.addEventListener("click", loadGastos);
   document.getElementById("btn-clientes")?.addEventListener("click", loadClientes);
@@ -303,6 +274,7 @@ async function cargarGraficoSemanal() {
     );
 
     let total = 0;
+
     const snap = await getDocs(
       query(
         collection(db, "pagos"),

@@ -47,11 +47,9 @@
   cursor: pointer;
   user-select: none;
 
-  /* 🔒 FONDO BLANCO FORZADO */
   background-color: #ffffff !important;
   background-image: none !important;
 
-  /* 🟦 TEXTO AZUL */
   color: #4f46e5 !important;
 
   padding: 0.85rem 1.4rem;
@@ -60,7 +58,6 @@
   font-size: 1.1rem;
   font-weight: 800;
 
-  /* ✨ BORDE + SOMBRA (SEPARACIÓN REAL) */
   border: 2px solid rgba(79, 70, 229, 0.15);
 
   box-shadow:
@@ -76,7 +73,6 @@
     background-color 0.15s ease;
 }
 
-/* Flecha (solo UNA, elimina duplicados visuales) */
 .btn-back::before {
   content: "←";
   font-size: 1.5rem;
@@ -84,7 +80,6 @@
   color: inherit;
 }
 
-/* Hover */
 .btn-back:hover {
   background-color: #eef2ff !important;
   transform: translateY(-2px) scale(1.04);
@@ -94,12 +89,10 @@
     0 0 0 4px rgba(255, 255, 255, 0.25);
 }
 
-/* Active */
 .btn-back:active {
   transform: scale(0.97);
 }
 
-/* Eliminar estilo de enlace definitivamente */
 .btn-back,
 .btn-back:hover,
 .btn-back:focus,
@@ -171,7 +164,6 @@
   margin-top: 0.4rem;
 }
 
-/* Ocultamos checkbox nativo */
 .form-card .checkbox input {
   appearance: none;
   -webkit-appearance: none;
@@ -184,7 +176,6 @@
   transition: background 0.2s ease;
 }
 
-/* Bolita */
 .form-card .checkbox input::before {
   content: "";
   position: absolute;
@@ -198,7 +189,6 @@
   transition: transform 0.2s ease;
 }
 
-/* Activo */
 .form-card .checkbox input:checked {
   background: linear-gradient(135deg, #6c4cf1, #4b32c3);
 }
@@ -342,7 +332,6 @@
   }
 }
 
-
 /* ======================================================
    HISTORIAL
 ====================================================== */
@@ -350,7 +339,6 @@
   gap: 1.8rem;
 }
 
-/* Header con filtro */
 .historial-module .module-header {
   flex-wrap: wrap;
   justify-content: space-between;
@@ -467,4 +455,26 @@
   font-size: 1.15rem;
   font-weight: 800;
   color: #4b32c3;
+}
+
+/* ======================================================
+   EXTENSIÓN SEGURA — EXPEDIENTE DE CLIENTE
+   (NO altera nada existente)
+====================================================== */
+
+.cliente-item {
+  flex-wrap: wrap;
+}
+
+.cliente-info {
+  cursor: pointer;
+}
+
+.cliente-expediente {
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.9rem;
+  background: #f6f7fb;
+  border-radius: 14px;
+  font-size: 0.85rem;
 }
