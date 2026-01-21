@@ -419,3 +419,4 @@ async function cargarGastos(start, end) {
   totalSpan.textContent = total.toFixed(2);
   return total;
 }
+
