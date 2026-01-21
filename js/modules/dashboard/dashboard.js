@@ -84,6 +84,7 @@ export async function loadDashboard() {
       new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
     );
 
+    // LAVADOS DEL DÍA
     const lavadosSnap = await getDocs(
       query(
         collection(db, "lavados"),
@@ -103,11 +104,13 @@ export async function loadDashboard() {
       }
     });
 
+    // INGRESOS DEL DÍA (POR FECHA, NO POR jornadaId)
     if (isAdmin) {
       const pagosSnap = await getDocs(
         query(
           collection(db, "pagos"),
-          where("jornadaId", "==", jornada.id)
+          where("createdAt", ">=", start),
+          where("createdAt", "<=", end)
         )
       );
 

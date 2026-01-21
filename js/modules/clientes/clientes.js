@@ -242,7 +242,7 @@ function bindClienteActions() {
 
       let restante = pago;
 
-      // PAGAR LAVADOS (SIN orderBy)
+      // PAGAR LAVADOS (RESPETANDO pagoGenerado)
       const lavadosSnap = await getDocs(
         query(
           collection(db, "lavados"),
@@ -255,36 +255,18 @@ function bindClienteActions() {
         if (restante <= 0) break;
 
         const l = d.data();
-        const pendiente = (l.price || 0) - (l.paidAmount || 0);
-        const aplicar = Math.min(pendiente, restante);
+        if (l.pagoGenerado === true) continue;
 
+        const pendiente = (l.price || 0) - (l.paidAmount || 0);
+        if (pendiente <= 0) continue;
+
+        const aplicar = Math.min(pendiente, restante);
         const nuevoPagado = (l.paidAmount || 0) + aplicar;
 
         await updateDoc(doc(db, "lavados", d.id), {
           paidAmount: nuevoPagado,
           pagado: nuevoPagado >= l.price,
-          locked: nuevoPagado >= l.price
-        });
-
-        restante -= aplicar;
-      }
-
-      // PAGAR DEUDAS MANUALES (SIN orderBy)
-      const manualSnap = await getDocs(
-        collection(db, "clientes", clientId, "deudas_manuales")
-      );
-
-      for (const d of manualSnap.docs) {
-        if (restante <= 0) break;
-
-        const m = d.data();
-        const pendiente = (m.amount || 0) - (m.paidAmount || 0);
-        if (pendiente <= 0) continue;
-
-        const aplicar = Math.min(pendiente, restante);
-
-        await updateDoc(d.ref, {
-          paidAmount: (m.paidAmount || 0) + aplicar
+          pagoGenerado: nuevoPagado >= l.price
         });
 
         restante -= aplicar;
@@ -333,7 +315,6 @@ async function cargarExpedienteCliente(clientId, panel) {
 
   let html = `<h4>Deudas pendientes</h4><ul>`;
 
-  // LAVADOS (SIN orderBy)
   const lavadosSnap = await getDocs(
     query(
       collection(db, "lavados"),
@@ -353,7 +334,6 @@ async function cargarExpedienteCliente(clientId, panel) {
     `;
   });
 
-  // MANUALES (SIN orderBy)
   const manualSnap = await getDocs(
     collection(db, "clientes", clientId, "deudas_manuales")
   );
