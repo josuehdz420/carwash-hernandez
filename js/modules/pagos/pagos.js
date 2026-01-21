@@ -70,7 +70,9 @@ export async function loadPagos() {
 
   document.getElementById("btn-volver").addEventListener("click", loadDashboard);
   document.getElementById("pago-form").addEventListener("submit", savePago);
-  document.getElementById("filter-cliente").addEventListener("change", loadPagosList);
+  document
+    .getElementById("filter-cliente")
+    .addEventListener("change", loadPagosList);
 
   loadPagosList();
 }
@@ -105,6 +107,25 @@ async function savePago(e) {
   }
 
   const clientName = clienteSnap.data().name;
+
+  // ==========================
+  // VALIDAR DEUDA REAL
+  // ==========================
+  const deudaReal = await calcularDeudaCliente(clienteId);
+
+  if (deudaReal <= 0) {
+    alert("Este cliente no tiene deuda pendiente");
+    return;
+  }
+
+  if (amount > deudaReal) {
+    alert(
+      `El monto supera la deuda real.\n` +
+      `Deuda actual: $${deudaReal.toFixed(2)}`
+    );
+    return;
+  }
+
   let restante = amount;
 
   // ==========================
@@ -115,6 +136,7 @@ async function savePago(e) {
       collection(db, "lavados"),
       where("clientId", "==", clienteId),
       where("pagado", "==", false),
+      where("price", ">", 0),
       orderBy("createdAt", "asc")
     )
   );
@@ -127,8 +149,9 @@ async function savePago(e) {
     const paid = l.paidAmount || 0;
     const pendiente = price - paid;
 
-    const aplicar = Math.min(pendiente, restante);
+    if (pendiente <= 0) continue;
 
+    const aplicar = Math.min(pendiente, restante);
     const nuevoPagado = paid + aplicar;
     const totalmentePagado = nuevoPagado >= price;
 
@@ -142,7 +165,7 @@ async function savePago(e) {
   }
 
   // ==========================
-  // REGISTRAR PAGO REAL
+  // REGISTRAR PAGO
   // ==========================
   await addDoc(collection(db, "pagos"), {
     clientId: clienteId,

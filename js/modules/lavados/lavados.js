@@ -139,9 +139,6 @@ async function saveLavado(e) {
     if (snap.exists()) clientName = snap.data().name;
   }
 
-  const pagado = price === 0 ? false : !pendiente;
-  const paidAmount = pagado ? price : 0;
-
   // ==========================
   // EDITAR
   // ==========================
@@ -151,10 +148,17 @@ async function saveLavado(e) {
 
     const l = snap.data();
 
-    if (l.pagoGenerado && pendiente) {
-      alert("Este lavado ya fue pagado y no puede volver a pendiente");
+    // 🔐 BLINDAJE CLAVE
+    if (l.paidAmount > 0 && !pendiente) {
+      alert(
+        "Este lavado tiene un pago parcial.\n" +
+        "Debe completarse desde el módulo de Clientes."
+      );
       return;
     }
+
+    const pagado = price === 0 ? false : !pendiente;
+    const paidAmount = l.paidAmount || 0;
 
     await updateDoc(doc(db, "lavados", editingLavadoId), {
       vehicleType,
@@ -164,21 +168,8 @@ async function saveLavado(e) {
       clientName,
       pagado,
       paidAmount,
-      pagoGenerado: pagado || l.pagoGenerado
+      pagoGenerado: l.pagoGenerado
     });
-
-    if (pagado && !l.pagoGenerado && price > 0) {
-      await addDoc(collection(db, "pagos"), {
-        clientId,
-        clientName,
-        lavadoId: editingLavadoId,
-        amount: price,
-        origen: "lavado",
-        anonimo: !clientId,
-        createdAt: serverTimestamp(),
-        reportedBy: user.name
-      });
-    }
 
     editingLavadoId = null;
   }
@@ -187,6 +178,9 @@ async function saveLavado(e) {
   // NUEVO
   // ==========================
   else {
+    const pagado = price === 0 ? false : !pendiente;
+    const paidAmount = pagado ? price : 0;
+
     const ref = await addDoc(collection(db, "lavados"), {
       vehicleType,
       description,
@@ -260,7 +254,7 @@ async function loadLavadosDelDia() {
           Pendiente: $${pendienteMonto.toFixed(2)}
         `;
 
-    const puedeEditar = !l.pagoGenerado;
+    const puedeEditar = !(l.paidAmount > 0);
     const puedeEliminar = !tieneDeuda;
 
     const div = document.createElement("div");
@@ -314,7 +308,7 @@ function bindLavadoActions() {
 
       const chk = document.getElementById("pendiente");
       chk.checked = !l.pagado;
-      chk.disabled = l.pagoGenerado === true;
+      chk.disabled = l.paidAmount > 0;
     });
   });
 
